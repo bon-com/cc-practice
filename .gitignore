@@ -2,3 +2,12 @@
 .env.*
 .claude/
 *.local
+
+# wiki（個人ナレッジベース）
+wiki-claude-learning/
+
+# wiki raw素材（著作権コンテンツ・処理済みソース）
+raw_back/
+
+# Obsidian 個人UI設定
+.obsidian/workspace.json
