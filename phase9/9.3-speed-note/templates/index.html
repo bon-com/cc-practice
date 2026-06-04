@@ -84,7 +84,8 @@
       font-size: 13px;
       line-height: 1.9;
       resize: none;
-      height: 160px;
+      min-height: 160px;
+      overflow-y: hidden;
       outline: none;
       font-family: inherit;
     }
@@ -160,7 +161,22 @@
 
     #timer-display { color: #4ec9b0; }
     #lines-display { color: #dcdcaa; font-size: 24px; }
-    #today-display { color: #c586c0; font-size: 24px; }
+    #today-display { color: #c586c0; font-size: 24px; cursor: pointer; }
+    #today-display:hover { opacity: 0.75; }
+
+    #today-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #c586c0;
+      color: #c586c0;
+      font-size: 24px;
+      font-weight: bold;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+      outline: none;
+      font-family: inherit;
+    }
 
     .progress-bar {
       height: 4px;
@@ -286,7 +302,8 @@
 
         <div class="stat-card">
           <div class="stat-label">TODAY</div>
-          <div class="stat-value" id="today-display">0</div>
+          <div class="stat-value" id="today-display" title="クリックで編集">0</div>
+          <input type="number" id="today-input" min="0" style="display:none">
           <div class="stat-sub">枚目</div>
         </div>
       </div>
@@ -309,6 +326,7 @@
 
     memo.value = '・';
     memo.selectionStart = memo.selectionEnd = 1;
+    autoResize();
 
     // --- タイマー状態 ---
     let timerState = 'idle'; // 'idle' | 'running' | 'done'
@@ -316,10 +334,17 @@
     let remainingSeconds = 60;
     let timerExpired = false;
 
+    // --- テキストエリア自動拡張 ---
+    function autoResize() {
+      memo.style.height = 'auto';
+      memo.style.height = memo.scrollHeight + 'px';
+    }
+
     // --- 箇条書きキーボード処理 ---
     function onMemoChange() {
       updateLines();
       startTimer();
+      autoResize();
     }
 
     memo.addEventListener('input', onMemoChange);
@@ -460,7 +485,48 @@
       document.getElementById('timer-card').classList.remove('urgent');
       updateTimerDisplay();
       updateLines();
+      autoResize();
     }
+
+    // --- TODAY 枚数インライン編集 ---
+    const todayDisplay = document.getElementById('today-display');
+    const todayInput = document.getElementById('today-input');
+
+    todayDisplay.addEventListener('click', function () {
+      todayInput.value = todayDisplay.textContent;
+      todayDisplay.style.display = 'none';
+      todayInput.style.display = 'block';
+      todayInput.focus();
+      todayInput.select();
+    });
+
+    async function commitTodayEdit() {
+      const val = parseInt(todayInput.value, 10);
+      if (!isNaN(val) && val >= 0) {
+        try {
+          await fetch('/api/count/set', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ count: val }),
+          });
+          todayDisplay.textContent = val;
+        } catch {
+          // 通信失敗時は元の値のまま
+        }
+      }
+      todayInput.style.display = 'none';
+      todayDisplay.style.display = '';
+    }
+
+    todayInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') commitTodayEdit();
+      if (e.key === 'Escape') {
+        todayInput.style.display = 'none';
+        todayDisplay.style.display = '';
+      }
+    });
+
+    todayInput.addEventListener('blur', commitTodayEdit);
 
     // --- ページロード時に TODAY カウントを取得 ---
     (async function loadTodayCount() {

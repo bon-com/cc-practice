@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import date
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 
@@ -39,6 +39,18 @@ def get_count():
 def increment_count():
     data = _load_counter()
     data['count'] += 1
+    _save_counter(data)
+    return jsonify({'count': data['count']})
+
+
+@app.route('/api/count/set', methods=['POST'])
+def set_count():
+    value = request.get_json(silent=True, force=True) or {}
+    count = value.get('count', 0)
+    if not isinstance(count, int) or count < 0:
+        return jsonify({'error': 'invalid value'}), 400
+    data = _load_counter()
+    data['count'] = count
     _save_counter(data)
     return jsonify({'count': data['count']})
 

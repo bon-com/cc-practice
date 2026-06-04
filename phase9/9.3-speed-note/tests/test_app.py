@@ -41,6 +41,26 @@ def test_increment_multiple(client):
     assert res.get_json() == {'count': 3}
 
 
+def test_set_count(client):
+    client.post('/api/count/increment')
+    client.post('/api/count/increment')
+    client.post('/api/count/set', json={'count': 5})
+    res = client.get('/api/count')
+    assert res.get_json() == {'count': 5}
+
+
+def test_set_count_to_zero(client):
+    client.post('/api/count/increment')
+    client.post('/api/count/set', json={'count': 0})
+    res = client.get('/api/count')
+    assert res.get_json() == {'count': 0}
+
+
+def test_set_count_invalid(client):
+    res = client.post('/api/count/set', json={'count': -1})
+    assert res.status_code == 400
+
+
 def test_date_reset(client, tmp_path, monkeypatch):
     counter_path = str(tmp_path / 'counter.json')
     monkeypatch.setattr(app_module, 'COUNTER_FILE', counter_path)

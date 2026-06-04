@@ -11,3 +11,6 @@ raw_back/
 
 # Obsidian 個人UI設定
 **/.obsidian/workspace.json
+
+# ビジュアルコンパニオンの一時ファイル
+.superpowers/
