@@ -303,7 +303,175 @@
   </div>
 
   <script>
-    // JS は次のタスクで追加する
+    const INDENT = '　'; // 全角スペース（・の幅に合わせるインデント）
+
+    const memo = document.getElementById('memo');
+
+    memo.value = '・';
+    memo.selectionStart = memo.selectionEnd = 1;
+
+    // --- タイマー状態 ---
+    let timerState = 'idle'; // 'idle' | 'running' | 'done'
+    let timerInterval = null;
+    let remainingSeconds = 60;
+    let timerExpired = false;
+
+    // --- 箇条書きキーボード処理 ---
+    function onMemoChange() {
+      updateLines();
+      startTimer();
+    }
+
+    memo.addEventListener('input', onMemoChange);
+
+    memo.addEventListener('keydown', function (e) {
+      if (memo.hasAttribute('readonly')) return;
+
+      const val = this.value;
+      const pos = this.selectionStart;
+
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const lineStart = val.lastIndexOf('\n', pos - 1) + 1;
+        const currentLine = val.substring(lineStart, pos);
+        if (currentLine === '・') return;
+        const newVal = val.substring(0, pos) + '\n・' + val.substring(this.selectionEnd);
+        this.value = newVal;
+        this.selectionStart = this.selectionEnd = pos + 2;
+        onMemoChange();
+        return;
+      }
+
+      if (e.key === 'Enter' && e.shiftKey) {
+        e.preventDefault();
+        const newVal = val.substring(0, pos) + '\n' + INDENT + val.substring(this.selectionEnd);
+        this.value = newVal;
+        this.selectionStart = this.selectionEnd = pos + 1 + INDENT.length;
+        onMemoChange();
+        return;
+      }
+
+      if (e.key === 'Backspace') {
+        const lineStart = val.lastIndexOf('\n', pos - 1) + 1;
+        const currentLine = val.substring(lineStart, pos);
+        if ((currentLine === '・' || currentLine === INDENT) && lineStart > 0) {
+          e.preventDefault();
+          const newVal = val.substring(0, lineStart - 1) + val.substring(pos);
+          this.value = newVal;
+          this.selectionStart = this.selectionEnd = lineStart - 1;
+          onMemoChange();
+        }
+      }
+    });
+
+    function updateLines() {
+      const lines = memo.value.split('\n').filter(l => l.trim() !== '');
+      document.getElementById('lines-display').textContent = lines.length;
+    }
+
+    // --- タイマー ---
+    function startTimer() {
+      if (timerState !== 'idle') return;
+      timerState = 'running';
+      timerInterval = setInterval(tick, 1000);
+    }
+
+    function tick() {
+      remainingSeconds--;
+      updateTimerDisplay();
+
+      if (remainingSeconds <= 15) {
+        document.getElementById('timer-card').classList.add('urgent');
+      }
+
+      if (remainingSeconds <= 0) {
+        clearInterval(timerInterval);
+        timerState = 'done';
+        timerExpired = true;
+        lockMemo();
+        showDialog();
+      }
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(remainingSeconds / 60).toString().padStart(2, '0');
+      const secs = (remainingSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('timer-display').textContent = `${mins}:${secs}`;
+      const pct = (remainingSeconds / 60) * 100;
+      document.getElementById('progress-fill').style.width = `${pct}%`;
+    }
+
+    function lockMemo() {
+      memo.setAttribute('readonly', '');
+    }
+
+    function showDialog() {
+      document.getElementById('dialog-overlay').classList.remove('hidden');
+    }
+
+    // --- ダイアログ OK ボタン ---
+    document.getElementById('btn-ok').addEventListener('click', function () {
+      document.getElementById('dialog-overlay').classList.add('hidden');
+    });
+
+    // --- コピーボタン ---
+    document.getElementById('btn-copy').addEventListener('click', async function () {
+      const text = memo.value;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        memo.removeAttribute('readonly');
+        memo.select();
+        document.execCommand('copy');
+        if (timerState === 'done') memo.setAttribute('readonly', '');
+      }
+      this.textContent = '✅ コピー済';
+      setTimeout(() => { this.textContent = '📋 コピー'; }, 2000);
+    });
+
+    // --- クリアボタン ---
+    document.getElementById('btn-clear').addEventListener('click', async function () {
+      if (timerExpired) {
+        try {
+          await fetch('/api/count/increment', { method: 'POST' });
+          const res = await fetch('/api/count');
+          const data = await res.json();
+          document.getElementById('today-display').textContent = data.count;
+        } catch {
+          // 通信失敗時はカウント更新をスキップ
+        }
+      }
+      resetAll();
+    });
+
+    function resetAll() {
+      document.getElementById('title').value = '';
+      memo.value = '・';
+      memo.removeAttribute('readonly');
+      memo.selectionStart = memo.selectionEnd = 1;
+      memo.focus();
+
+      clearInterval(timerInterval);
+      timerInterval = null;
+      remainingSeconds = 60;
+      timerState = 'idle';
+      timerExpired = false;
+
+      document.getElementById('timer-card').classList.remove('urgent');
+      updateTimerDisplay();
+      updateLines();
+    }
+
+    // --- ページロード時に TODAY カウントを取得 ---
+    (async function loadTodayCount() {
+      try {
+        const res = await fetch('/api/count');
+        const data = await res.json();
+        document.getElementById('today-display').textContent = data.count;
+      } catch {
+        // 取得失敗時は 0 のまま
+      }
+    })();
   </script>
 </body>
 </html>
