@@ -13,6 +13,7 @@ Claude Code の機能を実践的に学ぶ練習リポジトリ。
 |---|---|---|
 | [9.1-trinity](phase9/9.1-trinity/README.md) | Trinity ワークフロー | Plan Mode × Extended Thinking × Sequential Thinking MCP |
 | [9.2-wiki](phase9/9.2-wiki/) | Wiki 作成・管理 | Claude スキルで運用するパーソナルナレッジベース |
+| [9.3-speed-note](phase9/9.3-speed-note/) | SpeedNote | タイムド箇条書きメモツール（Python + Flask） |
 
 ---
 
