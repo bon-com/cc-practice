@@ -61,6 +61,54 @@ Obsidian と連携して閲覧・編集できる。
 
 ---
 
+## SpeedNote（9.3-speed-note）
+
+`phase9/9.3-speed-note/` は 60 秒のタイマーで構造化された箇条書きメモを作る Python + Flask 製の Web ツール。
+
+### 主な機能
+
+| 機能 | 詳細 |
+|---|---|
+| 60 秒タイマー | カウントダウン＋プログレスバー。残り 15 秒で赤色警告 |
+| 箇条書きエディタ | Enter → 新しい「・」行、Shift+Enter → インデント行。自動高さ調整 |
+| TODAY カウンター | 本日のメモ完成数を記録（日付変更で自動リセット） |
+| クリップボードコピー | 完成メモをワンクリックでコピー |
+| 永続化 | `data/counter.json` でカウントを保存 |
+
+### フォルダ構成
+
+```
+9.3-speed-note/
+├── app.py              # Flask サーバー（API 3本）
+├── requirements.txt    # flask==3.1.0 / pytest==8.3.0
+├── start.bat           # 起動 & ブラウザ自動オープン
+├── stop.bat            # ポート 5000 のプロセスを停止
+├── templates/
+│   └── index.html      # ダークテーマ UI（JS 含む）
+├── tests/
+│   └── test_app.py     # pytest テストスイート（8 ケース）
+└── data/
+    └── counter.json    # カウント永続化データ（.gitignore 対象）
+```
+
+### 起動方法
+
+```
+cd phase9/9.3-speed-note
+start.bat          # Windows: 自動でブラウザが開く
+# または
+python app.py      # http://localhost:5000 にアクセス
+```
+
+### テスト実行
+
+```
+cd phase9/9.3-speed-note
+pytest tests/
+```
+
+---
+
 ## このリポジトリについて
 
 - 各 Phase は独立した演習。順番通りに読む必要はない。
