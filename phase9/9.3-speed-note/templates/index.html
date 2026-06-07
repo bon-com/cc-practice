@@ -354,9 +354,9 @@
         const lineStart = val.lastIndexOf('\n', pos - 1) + 1;
         const currentLine = val.substring(lineStart, pos);
         if (currentLine === '・') return;
-        const newVal = val.substring(0, pos) + '\n・' + val.substring(this.selectionEnd);
+        const newVal = val.substring(0, pos) + '\n\n・' + val.substring(this.selectionEnd);
         this.value = newVal;
-        this.selectionStart = this.selectionEnd = pos + 2;
+        this.selectionStart = this.selectionEnd = pos + 3;
         onMemoChange();
         return;
       }
