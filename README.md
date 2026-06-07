@@ -63,7 +63,8 @@ Obsidian と連携して閲覧・編集できる。
 
 ## SpeedNote（9.3-speed-note）
 
-`phase9/9.3-speed-note/` は 60 秒のタイマーで構造化された箇条書きメモを作る Python + Flask 製の Web ツール。
+`phase9/9.3-speed-note/` は 60 秒のタイマーで構造化された箇条書きメモを作る Python + Flask 製の Web ツール。  
+メモを作成してストックし、Notionで管理することが目的。
 
 ### 主な機能
 
