@@ -253,6 +253,31 @@
     }
 
     #btn-ok:hover { opacity: 0.85; }
+
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+
+      .container { zoom: 1; }
+
+      .main { flex-direction: column; }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        order: -1;
+      }
+
+      .stat-card {
+        flex: 1;
+        padding: 8px 4px;
+      }
+
+      .stat-value { font-size: 22px; }
+
+      #lines-display,
+      #today-display,
+      #today-input { font-size: 22px; }
+    }
   </style>
 </head>
 <body>
